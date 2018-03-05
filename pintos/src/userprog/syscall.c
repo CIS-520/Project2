@@ -33,7 +33,7 @@ void exit (int status)
     if(thread_alive(t->parent))   
     {
       //set child status to parameter
-       t->cp->status = status 
+       t->cp->status = status;
     }
     sprintf("%s: exit(%d)\n",t->name, status);
 
@@ -184,3 +184,64 @@ void close (int fd)
     lock_release(&file_lock);
 }
 
+
+
+
+
+
+
+
+// the following code is pulled directly from https://github.com/ryantimwilson/Pintos-Project-2/blob/master/src/userprog/syscall.c
+
+
+struct child_process* add_child_process (int pid)
+{
+	  struct child_process* cp = malloc(sizeof(struct child_process));
+	    cp->pid = pid;
+	      cp->load = NOT_LOADED;
+	        cp->wait = false;
+		  cp->exit = false;
+		    lock_init(&cp->wait_lock);
+		      list_push_back(&thread_current()->child_list,
+				               &cp->elem);
+		        return cp;
+}
+
+struct child_process* get_child_process (int pid)
+{
+	  struct thread *t = thread_current();
+	    struct list_elem *e;
+
+	      for (e = list_begin (&t->child_list); e != list_end (&t->child_list);
+			             e = list_next (e))
+		              {
+				                struct child_process *cp = list_entry (e, struct child_process, elem);
+						          if (pid == cp->pid)
+								          {
+										            return cp;
+											            }
+							          }
+	        return NULL;
+}
+
+void remove_child_process (struct child_process *cp)
+{
+	  list_remove(&cp->elem);
+	    free(cp);
+}
+
+void remove_child_processes (void)
+{
+	  struct thread *t = thread_current();
+	    struct list_elem *next, *e = list_begin(&t->child_list);
+
+	      while (e != list_end (&t->child_list))
+		          {
+				        next = list_next(e);
+					      struct child_process *cp = list_entry (e, struct child_process,
+							                               elem);
+					            list_remove(&cp->elem);
+						          free(cp);
+							        e = next;
+								    }
+}
