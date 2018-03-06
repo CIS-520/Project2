@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include "filesys/filesys.h"
 #include "threads/synch.h"
-
 struct lock *file_lock;
 
 static void syscall_handler (struct intr_frame *);
@@ -85,7 +84,7 @@ bool remove (const char *file)
 int open (const char *file)
 {
     lock_acquire(&file_lock);
-    struct *filename = filesys_open(file);
+    struct file *filename  = filesys_open(file);
     if(!filename)
     {
         //filename does not exist
@@ -101,13 +100,13 @@ int open (const char *file)
 int filesize (int fd)
 {
     lock_acquire(&file_lock);
-    struct *file = process_get_file(fd);
-    if (!file)
+    struct file *fil = process_get_file(fd);
+    if (!fil)
     {
         lock_release(&file_lock);
         return ERROR;
     }
-    int size = file_length(file);
+    int size = file_length(fil);
     lock_release(&file_lock);
     return size;
 }
@@ -117,13 +116,13 @@ int read (int fd, void *buffer, unsigned size)
 {
     // think about read tests failing, (reading the buffer)
     lock_acquire(&file_lock);  
-    struct *file = process_get_file(fd);
-    if (!file)
+    struct file *fil = process_get_file(fd);
+    if (!fil)
     {
         lock_release(&file_lock);
         return -1;
     }
-    int result = file_read(file, buffer, size);
+    int result = file_read(fil, buffer, size);
     lock_release(&file_lock);
     return result;
 }
@@ -132,13 +131,13 @@ int write (int fd, const void *buffer, unsigned size)
 {
     
     lock_acquire(&file_lock);  
-    struct *file = process_get_file(fd);
-    if (!file)
+    struct file *fil = process_get_file(fd);
+    if (!fil)
     {
         lock_release(&file_lock);
         return -1;
     }
-    int result = file_write(file, buffer, size);
+    int result = file_write(fil, buffer, size);
     lock_release(&file_lock);
     return result;
 }
@@ -147,13 +146,13 @@ void seek (int fd, unsigned position)
 {
     
     lock_acquire(&file_lock);  
-    struct *file = process_get_file(fd);
-    if (!file)
+    struct file *fil= process_get_file(fd);
+    if (!fil)
     {
         lock_release(&file_lock);
         return -1;
     }
-    file_seek(file, position);
+    file_seek(fil, position);
     lock_release(&file_lock);
 }
 
@@ -161,18 +160,18 @@ unsigned tell (int fd)
 {
  
     lock_acquire(&file_lock);  
-    struct *file = process_get_file(fd);
-    if (!file)
+    struct file *fil = process_get_file(fd);
+    if (!fil)
     {
         lock_release(&file_lock);
         return -1;
     }
-    off_t number = file_seek(file);
+    off_t number = file_seek(fil);
     lock_release(&file_lock);
-    return off_t;
+    return number;
 }
 
-void close (int fd)
+/*void close (int fd)
 {
 
     lock_acquire(&file_lock);
@@ -183,6 +182,7 @@ void close (int fd)
     }
     lock_release(&file_lock);
 }
+*/
 
 
 
