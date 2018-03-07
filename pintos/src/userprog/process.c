@@ -34,20 +34,22 @@ process_execute (const char *file_name)
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
 
-  char *token = strtok_r(file_name, " ", filename); 
+  char *token = strtok_r(file_name, " ", file_name); 
   //strcpy might not be the most secure method
   //i am unsure what is the secure method
   //i am worried about some serious buffer overflow
   char *program_name;
   //strcpy(destination, source)
   //first token is the program name
-  strcpy(program_name,token);
+  //strcpy(program_name,token);
 
   //which exec do we call ?
 
   //other tokens are arguments
-  while(token = strtok_r(file_name, " " , filename)
-  {}
+//  while(token = strtok_r(file_name, " " , filename)
+ // {
+  
+  //}
   
   fn_copy = palloc_get_page (0);
   if (fn_copy == NULL)
@@ -76,6 +78,7 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load (file_name, &if_.eip, &if_.esp);
+  //allocaet new page. make sure accessible from userprog. copy arguments to page. 
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
@@ -104,6 +107,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+	for (;;);
   return -1;
 }
 
@@ -230,6 +234,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   off_t file_ofs;
   bool success = false;
   int i;
+  file_name = "echo";
 
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
@@ -453,7 +458,7 @@ setup_stack (void **esp)
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
       if (success)
-        *esp = PHYS_BASE;
+        *esp = PHYS_BASE - 12;
       else
         palloc_free_page (kpage);
     }
