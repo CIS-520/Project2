@@ -33,6 +33,22 @@ process_execute (const char *file_name)
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
+
+  char *token = strtok_r(file_name, " ", filename); 
+  //strcpy might not be the most secure method
+  //i am unsure what is the secure method
+  //i am worried about some serious buffer overflow
+  char *program_name;
+  //strcpy(destination, source)
+  //first token is the program name
+  strcpy(program_name,token);
+
+  //which exec do we call ?
+
+  //other tokens are arguments
+  while(token = strtok_r(file_name, " " , filename)
+  {}
+  
   fn_copy = palloc_get_page (0);
   if (fn_copy == NULL)
     return TID_ERROR;
