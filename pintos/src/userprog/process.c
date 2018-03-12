@@ -114,7 +114,8 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-	for (;;);
+//	timer_sleep(1000);
+for (;;);
   return -1;
 }
 
@@ -222,7 +223,8 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-#define DEFAULT_ARGV 2
+#define WORD_SIZE 4
+#define DEFAULT_ARGV 8
 static bool setup_stack (void **esp,const char* file_name,
 					 char** save_ptr);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
@@ -548,15 +550,38 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
   for (token = (char *) file_name; token != NULL;
 		         token = strtok_r (NULL, " ", save_ptr))
   {
+	  printf("this is current token: %s \n", token);
 	   *esp -= strlen(token) + 1;
 	 argv[argc] = *esp;
+	 printf("this is what is in argv at current count %d \n", argv[argc]);
 	argc++;
+	printf("current value of argc is %d \n", argc);
 	memcpy(*esp, token, strlen(token) + 1);	
   }
   //stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
   //stack_ptr = push_arg(stack_ptr, 0x5a5a5a5a); //pointer to argc
   //stack_ptr = push_arg(stack_ptr, 0x00223344); //name of the program
  // *esp = stack_ptr; // not sure if I still need this probably
+ argv[argc] = 0;
+
+// this code is not mine,,,,
+
+// Align to word size (4 bytes)
+   i = (size_t) *esp % WORD_SIZE;
+   if (i)
+  {
+    *esp -= i;
+    memcpy(*esp, &argv[argc], i);
+   }
+// Push argv[i] for all i
+ for (i = argc; i >= 0; i--)
+ {
+   *esp -= sizeof(char *);
+   memcpy(*esp, &argv[i], sizeof(char *));
+}
+
+
+
 
   // Push argv
   token = *esp;

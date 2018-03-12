@@ -41,7 +41,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
   int syscall_number; 
   syscall_number =*(int *) f->esp;
-
+  printf("this is the system call number right now %d \n", syscall_number);
   switch(syscall_number)
   {
 	  case SYS_WRITE :
