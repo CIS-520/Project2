@@ -327,8 +327,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
           break;
         }
 
-      //parse arguments here
-	   uint8_t *kpage;
+      //parse arguments here   -start of MG code
+/*	   uint8_t *kpage;
 	  bool success = false;
 
 	  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
@@ -370,8 +370,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
 	 
 
-    }
-
+    } // end of MG code
+*/
   /* Set up stack. */
   if (!setup_stack (esp))
     goto done;
