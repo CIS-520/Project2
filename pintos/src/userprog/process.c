@@ -19,7 +19,8 @@
 #include "threads/vaddr.h"
 
 static thread_func start_process NO_RETURN;
-static bool load (const char *cmdline, void (**eip) (void), void **esp);
+static bool load (const char *cmdline, void (**eip) (void), void **esp, char** save_ptr);
+
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
@@ -83,7 +84,7 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (program_name, &if_.eip, &if_.esp); // LETS GIVE IT ONLY THE PROPER FILE NAME, THEN RUN A TEST IF IT STILL WORKS 
+  success = load (program_name, &if_.eip, &if_.esp, &next_token_ptr); // LETS GIVE IT ONLY THE PROPER FILE NAME, THEN RUN A TEST IF IT STILL WORKS 
   //allocaet new page. make sure accessible from userprog. copy arguments to page. 
 
   /* If load failed, quit. */
@@ -221,7 +222,9 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp);
+#define DEFAULT_ARGV 2
+static bool setup_stack (void **esp,const char* file_name,
+					 char** save_ptr);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -232,7 +235,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
 bool
-load (const char *file_name, void (**eip) (void), void **esp) 
+load (const char *file_name, void (**eip) (void), void **esp, char** save_ptr) 
 {
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
@@ -248,6 +251,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
 
+  
+  printf("this is the file name %s \n", file_name);// debuggingggggggg delete later
+	
   /* Open executable file. */
   file = filesys_open (file_name);
   if (file == NULL) 
@@ -326,7 +332,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
             goto done;
           break;
         }
-
+    }
       //parse arguments here   -start of MG code
 /*	   uint8_t *kpage;
 	  bool success = false;
@@ -370,10 +376,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
 	 
 
-    } // end of MG code
+     // end of MG code
 */
+    
   /* Set up stack. */
-  if (!setup_stack (esp))
+  if (!setup_stack (esp,file_name, save_ptr))
     goto done;
 
   /* Start address. */
@@ -423,7 +430,7 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
      address space. */
   if (phdr->p_vaddr + phdr->p_memsz < phdr->p_vaddr)
     return false;
-
+  
   /* Disallow mapping page 0.
      Not only is it a bad idea to map page 0, but if we allowed
      it then user code that passed a null pointer to system calls
@@ -510,7 +517,7 @@ uint32_t * push_arg(uint32_t * stack_ptr, uint32_t arg)
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
-setup_stack (void **esp) 
+setup_stack (void **esp, const char * file_name, char **save_ptr) 
 {
   uint8_t *kpage;
   bool success = false;
@@ -530,14 +537,42 @@ setup_stack (void **esp)
       else
         palloc_free_page (kpage);
     }
+  char *token;
+  char **argv = malloc(DEFAULT_ARGV*sizeof(char *));
+  int i, argc = 0, argv_size = DEFAULT_ARGV;
 
+  
   stack_ptr = esp;
-  stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
-  stack_ptr = push_arg(stack_ptr, 0x5a5a5a5a); //pointer to argc
-  stack_ptr = push_arg(stack_ptr, 0x00223344); //name of the program
-  *esp = stack_ptr;
 
-  ASSERT(*esp == (PHYS_BASE-12));
+
+  for (token = (char *) file_name; token != NULL;
+		         token = strtok_r (NULL, " ", save_ptr))
+  {
+	   *esp -= strlen(token) + 1;
+	 argv[argc] = *esp;
+	argc++;
+	memcpy(*esp, token, strlen(token) + 1);	
+  }
+  //stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
+  //stack_ptr = push_arg(stack_ptr, 0x5a5a5a5a); //pointer to argc
+  //stack_ptr = push_arg(stack_ptr, 0x00223344); //name of the program
+ // *esp = stack_ptr; // not sure if I still need this probably
+
+  // Push argv
+  token = *esp;
+  *esp -= sizeof(char **);
+  memcpy(*esp, &token, sizeof(char **));
+  // Push argc
+  *esp -= sizeof(int);
+   memcpy(*esp, &argc, sizeof(int));
+ // Push fake return addr
+  *esp -= sizeof(void *);
+    memcpy(*esp, &argv[argc], sizeof(void *));
+  // Free argv
+  free(argv);
+  
+
+//  ASSERT(*esp == (PHYS_BASE-12));
   return success;
 }
 
