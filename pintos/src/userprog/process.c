@@ -328,6 +328,48 @@ load (const char *file_name, void (**eip) (void), void **esp)
         }
 
       //parse arguments here
+	   uint8_t *kpage;
+	  bool success = false;
+
+	  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	  if (kpage != NULL) 
+	    {
+	      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
+	      if (success)
+		      //i don't know if this will work
+		      //512 comes from 128 max arguments * 4 bytes each
+			*esp = PHYS_BASE - 512;
+	      else
+		palloc_free_page (kpage);
+	    }
+
+	 void **argument_list_start; 
+	 *argument_list_start = PHYS_BASE; 
+	 void **arg_pointer; 
+	 arg_pointer = argument_list_start; 
+
+	  //put argc and argv on the stack 
+	  //esp is a double pointer
+	  //argv first on stack
+	  //then argc on stack 
+	  *esp = *esp - 4; 
+	  **esp = argv;
+	  *esp = *esp - 4; 
+	  **esp = argc;
+	  //esp now points to argc
+
+	  //parse the arguments and put in page memory in array
+	  char *token; 
+	  while (token = strtok_r(file_name, " ", &next_token_ptr))
+	  {
+
+		//move before i put anything on
+		*arg_pointer = *arg_pointer- 4; 
+		**arg_pointer = token; 
+	  }
+
+	 
+
     }
 
   /* Set up stack. */
