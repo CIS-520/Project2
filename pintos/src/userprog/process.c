@@ -362,7 +362,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 	  char *token; 
 	  while (token = strtok_r(file_name, " ", &next_token_ptr))
 	  {
-
+		// file name DOES NOT HAVE EVERYTHING.. .AND WE NEED TO CHANGE TOKEN
 		//move before i put anything on
 		*arg_pointer = *arg_pointer- 4; 
 		**arg_pointer = token; 
@@ -495,6 +495,18 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   return true;
 }
 
+
+
+//this will be a function that will push the arguments on the stack ( it was given by chandra )
+
+uint32_t * push_arg(uint32_t * stack_ptr, uint32_t arg)
+{
+    stack_ptr--;
+    *stack_ptr = arg;
+
+    return stack_ptr;
+}
+
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
 static bool
@@ -502,6 +514,12 @@ setup_stack (void **esp)
 {
   uint8_t *kpage;
   bool success = false;
+	
+  
+  //this will be 'chandra's implementation of argument passing doen inside of setup stack, this will make it so that we don't have to re-copy code. 
+
+  
+  uint32_t * stack_ptr;
 
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
@@ -512,6 +530,14 @@ setup_stack (void **esp)
       else
         palloc_free_page (kpage);
     }
+
+  stack_ptr = esp;
+  stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
+  stack_ptr = push_arg(stack_ptr, 0x5a5a5a5a); //pointer to argc
+  stack_ptr = push_arg(stack_ptr, 0x00223344); //name of the program
+  *esp = stack_ptr;
+
+  ASSERT(*esp == (PHYS_BASE-12));
   return success;
 }
 
