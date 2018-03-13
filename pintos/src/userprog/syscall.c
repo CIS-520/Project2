@@ -107,7 +107,7 @@ int
 syscall_filesize (struct intr_frame *f)
 {
 
-	int status = *(int*) (f->esp+4);
+	int fd = *(int*) (f->esp+4);
 	
 	//https://stackoverflow.com/questions/6537436/how-do-you-get-file-size-by-fd
 	off_t fsize; 
