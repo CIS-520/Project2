@@ -162,7 +162,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	  case SYS_EXIT : 
 		 syscall_exit(f); 
 		 break;
-	  case SYS_FILESYZE:
+	  case SYS_FILESIZE:
 		 syscall_filesize(f); 
 		 break;
 	  case SYS_READ:
