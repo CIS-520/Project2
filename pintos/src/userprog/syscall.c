@@ -122,7 +122,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 syscall_open(f); 
 		 break;
 	  case SYS_EXIT : 
-		 syscall_open(f); 
+		 syscall_exit(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);
