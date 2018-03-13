@@ -4,6 +4,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "filesys/filesys.h"
+#include "userprog/process.h"
 //#include </usr/include/unistd.h>
 static void syscall_handler (struct intr_frame *);
 
@@ -81,6 +82,25 @@ syscall_open(struct intr_frame *f)
 return 1;
 }
 
+void
+exit(int status)
+{
+	//0 indicates success 
+	//non zero indicates failures
+	
+	//print the process name and exit code
+	struct thread *cur = thread_current(); 
+	uint32_t *pd; 
+	char *pname = cur->name; //i could use thread_name() but it calls thread_current()
+	//more efficient 
+
+	process_exit(); 
+	printf ("%s: exit(%d)\n", pname, pd);
+	
+	
+	return 1; 
+}
+
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
@@ -99,6 +119,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 syscall_remove(f); 
 		 break;
 	  case SYS_OPEN : 
+		 syscall_open(f); 
+		 break;
+	  case SYS_EXIT : 
 		 syscall_open(f); 
 		 break;
 	  default:
