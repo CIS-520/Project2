@@ -104,7 +104,7 @@ syscall_exit(struct intr_frame *f)
 }
 
 int
-filesize (struct intr_frame *f)
+syscall_filesize (struct intr_frame *f)
 {
 
 	int status = *(int*) (f->esp+4);
