@@ -19,5 +19,5 @@ echo entering directory /userprog/build...
 cd build
 pintos-mkdisk filesys.dsk --filesys-size=2
 pintos -f -q
-pintos -p ../../examples/echo -a echo -- -q 
-pintos -q run 'echo x' 
+pintos -p ../../examples/cat -a cat -- -q 
+pintos -q run 'cat test1 test2'
