@@ -117,6 +117,28 @@ syscall_filesize (struct intr_frame *f)
 
 }
 
+int
+syscall_read( struct intr_frame *f)
+{
+	int fd = *(int*) (f->esp+4);
+	printf("Value of SD %d", fd);
+	char *buffer = (char *)*(uint32_t *) (f->esp+8);
+	printf("value of buffer %s", buffer); 
+	unsigned size = *(unsigned* ) (f->esp+12);
+	printf("value of size %d", size); 
+
+	//i am assumming that we want to read from the current position in the file
+	//function below returns number of bytes read
+	//https://stackoverflow.com/questions/1941464/how-to-get-a-file-pointer-from-a-file-descriptor
+	FILE *fp = fdopen(fd, "w");
+	//i am assumming that file_read returns -1 if error
+	return file_read(fp, buffer, size); 
+	
+
+}
+
+
+
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
@@ -142,6 +164,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 break;
 	  case SYS_FILESYZE:
 		 syscall_filesize(f); 
+		 break;
+	  case SYS_READ:
+		 syscall_read(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);
