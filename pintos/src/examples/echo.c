@@ -4,6 +4,9 @@
 int
 main (int argc, char **argv)
 {
+	//	FILE *fp;
+        //fp = fopen("file.txt" , "w+");
+
 	// we are going to test the arguments, see if they are put on the stack properly
 	//
 	/* int i=0;
@@ -19,6 +22,9 @@ main (int argc, char **argv)
 	    printf("\n");
 	     return 0; */
 printf("hello world");
+
+// lets try an fopen?
+//
 //__asm__ __volatile__("int $0x30");
 /*  int i;
 

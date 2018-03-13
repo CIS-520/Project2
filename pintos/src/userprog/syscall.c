@@ -3,6 +3,7 @@
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
+#include "filesys/filesys.h"
 //#include </usr/include/unistd.h>
 static void syscall_handler (struct intr_frame *);
 
@@ -34,6 +35,20 @@ int fd;
 
 }
 
+int 
+syscall_create (struct intr_frame *f) {
+
+	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
+	printf("Value of filename %s", filename); 
+	unsigned initial_size = *(unsigned*) (f-> esp + 8); 
+	printf("Value of size %d", initial_size); 
+
+	filesys_create( filename, initial_size); 
+
+
+	
+}
+
 
 
 static void
@@ -46,6 +61,9 @@ syscall_handler (struct intr_frame *f UNUSED)
   {
 	  case SYS_WRITE :
 		 syscall_write(f);
+		 break;
+	  case SYS_CREATE : 
+		 syscall_create(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);
