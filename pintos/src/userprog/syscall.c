@@ -40,10 +40,14 @@ syscall_create (struct intr_frame *f) {
 
 	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
 	printf("Value of filename %s", filename); 
-	unsigned initial_size = *(unsigned*) (f-> esp + 8); 
+	
+
+	unsigned initial_size =10;  
+		//*(unsigned*) (f-> esp + 8); 
 	printf("Value of size %d", initial_size); 
 
-	filesys_create( filename, initial_size); 
+	int success = 	filesys_create( filename, initial_size); 
+	return success;
 
 
 	
@@ -67,11 +71,14 @@ syscall_open(struct intr_frame *f)
 	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
 	printf("Value of filename %s", filename); 
 
-	FILE *fp = filesys_open(filename); 
+//	FILE *fp =
+		filesys_open(filename); 
 	//https://stackoverflow.com/questions/3167298/how-can-i-convert-a-file-pointer-file-fp-to-a-file-descriptor-int-fd/19970205
 	//apparently this may cause unexpected output with buffer problems
-	int fd = fileno(fp); 
-	return fd; 
+//	int fd = fileno(fp); 
+//	return fd; 
+
+return 1;
 }
 
 static void
