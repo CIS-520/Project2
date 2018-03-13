@@ -43,10 +43,7 @@ syscall_create (struct intr_frame *f) {
 	unsigned initial_size = *(unsigned*) (f-> esp + 8); 
 	printf("Value of size %d", initial_size); 
 
-	//filesys takes a 3rd parameter of bool type?
-	char path[17] = "./"; 
-	strcat(path, filename); 
-	filesys_create( path, initial_size, false); 
+	filesys_create( filename, initial_size); 
 
 
 	
