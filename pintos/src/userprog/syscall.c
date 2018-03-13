@@ -49,7 +49,30 @@ syscall_create (struct intr_frame *f) {
 	
 }
 
+bool
+syscall_remove (struct intr_frame *f) 
+{
+	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
+	printf("Value of filename %s", filename); 
 
+	//instructions say filesys_remove includes UNIX-like semantics
+	//(removing open files for ex)
+	return filesys_remove(filename); 
+
+}
+
+int 
+syscall_open(struct intr_frame *f)
+{
+	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
+	printf("Value of filename %s", filename); 
+
+	FILE *fp = filesys_open(filename); 
+	//https://stackoverflow.com/questions/3167298/how-can-i-convert-a-file-pointer-file-fp-to-a-file-descriptor-int-fd/19970205
+	//apparently this may cause unexpected output with buffer problems
+	int fd = fileno(fp); 
+	return fd; 
+}
 
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
@@ -64,6 +87,12 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 break;
 	  case SYS_CREATE : 
 		 syscall_create(f); 
+		 break;
+	  case SYS_REMOVE : 
+		 syscall_remove(f); 
+		 break;
+	  case SYS_OPEN : 
+		 syscall_open(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);
