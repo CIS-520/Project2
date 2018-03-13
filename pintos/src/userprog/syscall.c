@@ -83,7 +83,7 @@ return 1;
 }
 
 void
-exit(int status)
+syscall_exit(int status)
 {
 	//0 indicates success 
 	//non zero indicates failures
