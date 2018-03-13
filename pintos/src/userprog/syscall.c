@@ -83,7 +83,7 @@ return 1;
 }
 
 void
-syscall_exit(int status)
+syscall_exit(struct intr_frame *f)
 {
 	//0 indicates success 
 	//non zero indicates failures
@@ -95,10 +95,26 @@ syscall_exit(int status)
 	//more efficient 
 
 	process_exit(); 
+	int status = *(int*) (f->esp+4);
 	printf ("%s: exit(%d)\n", pname, pd);
 	
 	
-	return 1; 
+	//i don't know the logic to find out if the process exited ok 
+	status = 0; 
+}
+
+int
+filesize (struct intr_frame *f)
+{
+
+	int status = *(int*) (f->esp+4);
+	
+	//https://stackoverflow.com/questions/6537436/how-do-you-get-file-size-by-fd
+	off_t fsize; 
+	fsize = lseek(fd, 0, SEEK_END); 
+	//fsize is measured in bytes
+	return fsize; 
+
 }
 
 static void
@@ -123,6 +139,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 break;
 	  case SYS_EXIT : 
 		 syscall_exit(f); 
+		 break;
+	  case SYS_FILESYZE:
+		 syscall_filesize(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);
