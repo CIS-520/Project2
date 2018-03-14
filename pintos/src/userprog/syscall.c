@@ -6,6 +6,7 @@
 #include "filesys/filesys.h"
 #include "userprog/process.h"
 #include "filesys/file.h"
+#include <user/syscall.h>
 static void syscall_handler (struct intr_frame *);
 
 void
@@ -20,6 +21,12 @@ struct file_info{
 	struct file *file; 
 	int fd; 
 	char *filename; 
+	struct list_elem elem; 
+};
+
+struct waiting_thread_info{
+	struct thread *thread; 
+	pid_t pid; 
 	struct list_elem elem; 
 };
 
@@ -146,14 +153,33 @@ syscall_exit(struct intr_frame *f)
 	//non zero indicates failures
 	
 	//print the process name and exit code
-	struct thread *cur = thread_current(); 
-	uint32_t *pd; 
-	char *pname = cur->name; //i could use thread_name() but it calls thread_current()
+	struct thread *current = thread_current(); 
+	tid_t pid; 
+	char *pname = current->name; //i could use thread_name() but it calls thread_current()
 	//more efficient 
 
-	process_exit(); 
+	//notify waiting threads to wake up
+	struct list_elem *next, *e = list_begin(&current -> waiting_threads); 
+
+	//loop through the thread list and remove correct file_info struct
+	while (e != list_end(&current-> waiting_threads))
+	{
+		next = list_next(e); 
+
+		//get my file_info from the list_elem
+		struct waiting_list_info *thread_info = list_entry(e, struct waiting_list_info, elem); 
+
+		//check if the fd's are the same
+		if (pid == thread_info -> pid)
+		{
+			thread_unblock(thread_info->thread); 
+		}
+		e = next; 
+	}
+	
 	int status = *(int*) (f->esp+4);
-	printf ("%s: exit(%d)\n", pname, pd);
+	//printf ("%s: exit(%d)\n", pname, pid);
+	process_exit(); 
 	
 	
 	//i don't know the logic to find out if the process exited ok 
@@ -197,6 +223,34 @@ syscall_read( struct intr_frame *f)
 
 }
 
+int
+syscall_wait( struct intr_frame *f)
+{
+
+	pid_t pid = *(int*) (f->esp+4);
+	//before I block the thread, tell waiting_on_thread
+	
+	//is pid alive?
+	
+	struct thread *current = thread_current(); 
+
+	//make waiting_thread_info struct
+	struct waiting_thread_info *thread_info = malloc(sizeof(struct waiting_thread_info)); 
+	thread_info -> thread = current; 
+	thread_info -> pid = current -> tid; 
+
+	//add the thread 
+	list_push_back( &current-> waiting_threads, &thread_info-> elem); 
+	thread_block(); 
+	
+	//return status that pid returns; 
+	return 0; 
+
+}
+
+
+
+
 
 
 static void
@@ -230,6 +284,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 break;
 	  case SYS_READ:
 		 syscall_read(f); 
+		 break;
+	  case SYS_WAIT:
+		 syscall_wait(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);

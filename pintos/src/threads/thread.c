@@ -471,6 +471,7 @@ init_thread (struct thread *t, const char *name, int priority)
   list_init(&t -> list_of_files);
   t->fd = 2; 
 
+  list_init(&t -> waiting_threads);
   //list_init(&t -> children); 
   //t -> cp = NULL; 
   //t -> parent = -1; 
