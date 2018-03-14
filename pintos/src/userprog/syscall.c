@@ -5,7 +5,7 @@
 #include "threads/thread.h"
 #include "filesys/filesys.h"
 #include "userprog/process.h"
-//#include </usr/include/unistd.h>
+#include "filesys/file.h"
 static void syscall_handler (struct intr_frame *);
 
 void
@@ -72,7 +72,7 @@ syscall_open(struct intr_frame *f)
 	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
 	printf("Value of filename %s", filename); 
 
-//	FILE *fp =
+//	file *fp =
 		filesys_open(filename); 
 	//https://stackoverflow.com/questions/3167298/how-can-i-convert-a-file-pointer-file-fp-to-a-file-descriptor-int-fd/19970205
 	//apparently this may cause unexpected output with buffer problems
@@ -110,10 +110,9 @@ syscall_filesize (struct intr_frame *f)
 	int fd = *(int*) (f->esp+4);
 	
 	//https://stackoverflow.com/questions/6537436/how-do-you-get-file-size-by-fd
-	off_t fsize; 
-	fsize = lseek(fd, 0, SEEK_END); 
+	struct file *fp = fdopen(fd,"w"); 
 	//fsize is measured in bytes
-	return fsize; 
+	return file_length(fp); 
 
 }
 
@@ -130,7 +129,7 @@ syscall_read( struct intr_frame *f)
 	//i am assumming that we want to read from the current position in the file
 	//function below returns number of bytes read
 	//https://stackoverflow.com/questions/1941464/how-to-get-a-file-pointer-from-a-file-descriptor
-	FILE *fp = fdopen(fd, "w");
+	struct file *fp = fdopen(fd, "w");
 	//i am assumming that file_read returns -1 if error
 	return file_read(fp, buffer, size); 
 	
