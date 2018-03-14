@@ -117,6 +117,17 @@ process_wait (tid_t child_tid UNUSED)
 //	timer_sleep(1000);
 for (;;);
   return -1;
+  /*
+  struct thread * cur_thread = thread_current();
+
+  cur_thread->waiting_for_child = true;
+  sema_init(&cur_thread->wait_child_sema);
+  sema_down(&cur_thread->wait_child_sema);
+  cur_thread->waiting_for_child = false;
+
+  printf("Child exitd with status<%d>!\n", cur_thread->child_exit_status);
+  return -1;
+  */
 }
 
 /* Free the current process's resources. */
