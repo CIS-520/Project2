@@ -102,12 +102,12 @@ struct thread
     unsigned magic;                     /* Detects stack overflow. */
 
     //https://github.com/ryantimwilson/Pintos-Project-2/blob/master/src/threads/thread.h
-    struct list list_of_files; 
-    int fd; 
+    //struct list list_of_files; 
+    //int fd; 
 
-    struct list children; 
-    tid_t parent; 
-    struct child_process *cp;
+    //struct list children; 
+    //tid_t parent; 
+    //struct child_process *cp;
 
   };
 

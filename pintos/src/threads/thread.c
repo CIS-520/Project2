@@ -468,12 +468,12 @@ init_thread (struct thread *t, const char *name, int priority)
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
 
-  list_init(&t -> list_of_files);
-  t->fd = 2; 
+  //list_init(&t -> list_of_files);
+  //t->fd = 2; 
 
-  list_init(&t -> children); 
-  t -> cp = NULL; 
-  t -> parent = -1; 
+  //list_init(&t -> children); 
+  //t -> cp = NULL; 
+  //t -> parent = -1; 
 
 }
 

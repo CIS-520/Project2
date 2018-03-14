@@ -1,11 +1,11 @@
 #include "userprog/syscall.h"
-#include </usr/include/stdio.h>
+#include <stdio.h>
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "filesys/filesys.h"
 #include "userprog/process.h"
-#include "filesys/file.h"
+//#include "filesys/file.h"
 static void syscall_handler (struct intr_frame *);
 
 void
@@ -14,9 +14,19 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
+/*
+struct file_info{
+
+	struct file *file; 
+	int fd; 
+	char *filename; 
+	struct list_elem elem; 
+};
+*/
+
 int
 syscall_write (struct intr_frame *f){
-int fd;
+	int fd;
 
 	fd = *(int*) (f->esp+4);
 	printf("Value of SD %d", fd);
@@ -32,6 +42,8 @@ int fd;
 	{
 		printf("%c", buffer[i]);
 	}
+
+	return 0; 
 	
 
 }
@@ -66,20 +78,47 @@ syscall_remove (struct intr_frame *f)
 
 }
 
+int
+syscall_close(struct intr_frame *f)
+{
+
+	//grab fd from the stack 
+	int fd = *(int*) (f->esp+4);
+
+	//get the current thread so i can loop through its files
+	struct thread *current = thread_current(); 
+	
+	//grab the current threads file list
+	//struct list_elem *next, *e = list_begin(&current -> list_of_files); 
+	return 0; 
+}
+
 int 
 syscall_open(struct intr_frame *f)
 {
+
 	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
 	printf("Value of filename %s", filename); 
 
-//	file *fp =
-		filesys_open(filename); 
-	//https://stackoverflow.com/questions/3167298/how-can-i-convert-a-file-pointer-file-fp-to-a-file-descriptor-int-fd/19970205
-	//apparently this may cause unexpected output with buffer problems
-//	int fd = fileno(fp); 
-//	return fd; 
+	//make the structure to store file_info
+	//struct file_info fp_info = malloc(sizeof(struct file_info)); 
+/*
+	struct thread *current = thread_current(); 
+	file *fp = filesys_open(filename); 
+	fp_info -> file = fp;
+	fp_info -> fd = current-> fd; 
+	fp_info -> filename = filename; 
+	
 
-return 1;
+	//add file_info to threads list of files 
+	current->fd++; 
+	list_push_back( &current-> list_of_files, &fp_info-> elem); 
+	
+
+	//return file_descriptor
+	return fp_info -> fd; 
+	*/
+	return 0; 
 }
 
 void
@@ -112,9 +151,10 @@ syscall_filesize (struct intr_frame *f)
 	int fd = *(int*) (f->esp+4);
 	
 	//https://stackoverflow.com/questions/6537436/how-do-you-get-file-size-by-fd
-	struct file *fp = fdopen(fd,"w"); 
+	//struct file *fp = fdopen(fd,"w"); 
 	//fsize is measured in bytes
-	return file_length(fp); 
+	//return file_length(fp); 
+	return 0; 
 
 }
 
@@ -131,9 +171,10 @@ syscall_read( struct intr_frame *f)
 	//i am assumming that we want to read from the current position in the file
 	//function below returns number of bytes read
 	//https://stackoverflow.com/questions/1941464/how-to-get-a-file-pointer-from-a-file-descriptor
-	struct file *fp = fdopen(fd, "w");
+	//struct file *fp = fdopen(fd, "w");
 	//i am assumming that file_read returns -1 if error
-	return file_read(fp, buffer, size); 
+	//return file_read(fp, buffer, size); 
+	return 0; 
 	
 
 }
@@ -159,6 +200,9 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 break;
 	  case SYS_OPEN : 
 		 syscall_open(f); 
+		 break;
+	  case SYS_CLOSE : 
+		 syscall_close(f); 
 		 break;
 	  case SYS_EXIT : 
 		 syscall_exit(f); 
