@@ -5,7 +5,7 @@
 #include "threads/thread.h"
 #include "filesys/filesys.h"
 #include "userprog/process.h"
-//#include "filesys/file.h"
+#include "filesys/file.h"
 static void syscall_handler (struct intr_frame *);
 
 void
