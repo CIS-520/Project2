@@ -14,7 +14,7 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-/*
+
 struct file_info{
 
 	struct file *file; 
@@ -22,7 +22,7 @@ struct file_info{
 	char *filename; 
 	struct list_elem elem; 
 };
-*/
+
 
 int
 syscall_write (struct intr_frame *f){
