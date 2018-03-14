@@ -89,7 +89,28 @@ syscall_close(struct intr_frame *f)
 	struct thread *current = thread_current(); 
 	
 	//grab the current threads file list
-	//struct list_elem *next, *e = list_begin(&current -> list_of_files); 
+	struct list_elem *next, *e = list_begin(&current -> list_of_files); 
+
+	//loop through the thread list and remove correct file_info struct
+	while (e != list_end(&current-> list_of_files))
+	{
+		next = list_next(e); 
+
+		//get my file_info from the list_elem
+		struct file_info *f_info = list_entry(e, struct file_info, elem); 
+
+		//check if the fd's are the same
+		if (fd == f_info -> fd)
+		{
+			file_close(f_info-> file); 
+			list_remove(&f_info->elem); 
+			free(f_info); 
+
+		}
+		e = next; 
+	}
+
+	//change this return statement
 	return 0; 
 }
 
@@ -108,12 +129,10 @@ syscall_open(struct intr_frame *f)
 	fp_info -> file = fp;
 	fp_info -> fd = current-> fd; 
 	fp_info -> filename = filename; 
-	
 
 	//add file_info to threads list of files 
 	current->fd++; 
 	list_push_back( &current-> list_of_files, &fp_info-> elem); 
-	
 
 	//return file_descriptor
 	return fp_info -> fd; 
