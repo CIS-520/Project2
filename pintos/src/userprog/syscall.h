@@ -4,7 +4,7 @@
 void syscall_init (void);
 
 //https://github.com/ryantimwilson/Pintos-Project-2/blob/master/src/userprog/syscall.h
-/*
+
 struct child_process{
 	int pid; 
 	int load; 
@@ -14,5 +14,5 @@ struct child_process{
 	struct lock wait_lock; 
 	struct list_elem elem; 
 };
-*/
+
 #endif /* userprog/syscall.h */
