@@ -101,10 +101,10 @@ syscall_open(struct intr_frame *f)
 	printf("Value of filename %s", filename); 
 
 	//make the structure to store file_info
-	//struct file_info fp_info = malloc(sizeof(struct file_info)); 
-/*
+	struct file_info *fp_info = malloc(sizeof(struct file_info)); 
+
 	struct thread *current = thread_current(); 
-	file *fp = filesys_open(filename); 
+	struct file *fp = filesys_open(filename); 
 	fp_info -> file = fp;
 	fp_info -> fd = current-> fd; 
 	fp_info -> filename = filename; 
@@ -117,8 +117,7 @@ syscall_open(struct intr_frame *f)
 
 	//return file_descriptor
 	return fp_info -> fd; 
-	*/
-	return 0; 
+	
 }
 
 void
