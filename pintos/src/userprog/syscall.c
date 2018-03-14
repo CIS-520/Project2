@@ -167,7 +167,7 @@ syscall_exit(struct intr_frame *f)
 		next = list_next(e); 
 
 		//get my file_info from the list_elem
-		struct waiting_list_info *thread_info = list_entry(e, struct waiting_list_info, elem); 
+		struct waiting_thread_info *thread_info = list_entry(e, struct waiting_thread_info, elem); 
 
 		//check if the fd's are the same
 		if (pid == thread_info -> pid)
