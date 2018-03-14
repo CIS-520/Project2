@@ -105,6 +105,8 @@ struct thread
     struct list list_of_files; 
     int fd; 
 
+    //the threads that are waiting on this process
+    struct list waiting_threads; 
     //struct list children; 
     //tid_t parent; 
     //struct child_process *cp;
