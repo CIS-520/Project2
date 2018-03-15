@@ -1,4 +1,5 @@
 #include "userprog/process.h"
+#include "devices/timer.h"
 #include <debug.h>
 #include <inttypes.h>
 #include <round.h>
@@ -115,7 +116,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-//	timer_sleep(1000);
+	timer_sleep(1000);
 //for (;;);
   //return -1;
   /*
@@ -133,8 +134,8 @@ process_wait (tid_t child_tid UNUSED)
 
 // this is code from ryantimewilson
 //
-
-
+// this code that isn't mine isn't working I am trying to figure out why my program is getting stck
+/*
 	struct child_process* cp = get_child_process(child_tid);
 	if (!cp)
 	{
@@ -152,7 +153,7 @@ process_wait (tid_t child_tid UNUSED)
 	int status = cp-> status;
 	remove_child_process(cp);
 	return status;
-
+*/
 
 }
 
@@ -587,12 +588,12 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
   for (token = (char *) file_name; token != NULL;
 		         token = strtok_r (NULL, " ", save_ptr))
   {
-	  printf("this is current token: %s \n", token);
+//	  printf("this is current token: %s \n", token);
 	   *esp -= strlen(token) + 1;
 	 argv[argc] = *esp;
-	 printf("this is what is in argv at current count %d \n", argv[argc]);
+//	 printf("this is what is in argv at current count %d \n", argv[argc]);
 	argc++;
-	printf("current value of argc is %d \n", argc);
+//	printf("current value of argc is %d \n", argc);
 	memcpy(*esp, token, strlen(token) + 1);	
   }
   //stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
@@ -614,7 +615,7 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
  for (i = argc; i >= 0; i--)
  {
    *esp -= sizeof(char *);
-   printf("this is the current argument %s number: %d \n", argv[i], i);
+ //  printf("this is the current argument %s number: %d \n", argv[i], i);
    memcpy(*esp, &argv[i], sizeof(char *));
 }
 
@@ -631,11 +632,11 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
  // Push fake return addr
   *esp -= sizeof(void *);
     memcpy(*esp, &argv[argc], sizeof(void *));
-    printf("this is the final argc value %d \n", argc);
+  //  printf("this is the final argc value %d \n", argc);
   // Free argv
   free(argv);
 
-    printf("this is the final argv value at 0 %d \n", &argv[0]);
+   // printf("this is the final argv value at 0 %d \n", &argv[0]);
 
 //  ASSERT(*esp == (PHYS_BASE-12));
   return success;
