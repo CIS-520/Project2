@@ -17,7 +17,8 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
-
+#include "threads/synch.h"
+#include "userprog/syscall.h"
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp, char** save_ptr);
 
@@ -73,7 +74,7 @@ start_process (void *file_name_)
   bool success;
   char * next_token_ptr;
   char *token = strtok_r(file_name, " ", &next_token_ptr); 
-  printf("this is the token %s", token);
+ // printf("this is the token %s", token);
   
 
   char   program_name[14];
@@ -115,8 +116,8 @@ int
 process_wait (tid_t child_tid UNUSED) 
 {
 //	timer_sleep(1000);
-for (;;);
-  return -1;
+//for (;;);
+  //return -1;
   /*
   struct thread * cur_thread = thread_current();
 
@@ -128,6 +129,31 @@ for (;;);
   printf("Child exitd with status<%d>!\n", cur_thread->child_exit_status);
   return -1;
   */
+
+
+// this is code from ryantimewilson
+//
+
+
+	struct child_process* cp = get_child_process(child_tid);
+	if (!cp)
+	{
+		return -1;
+	}
+	if(cp->wait)
+	{
+		return -1;
+	}
+	cp -> wait = true;
+	while (!cp->exit)
+	{
+		barrier();
+	}
+	int status = cp-> status;
+	remove_child_process(cp);
+	return status;
+
+
 }
 
 /* Free the current process's resources. */
@@ -265,7 +291,7 @@ load (const char *file_name, void (**eip) (void), void **esp, char** save_ptr)
   process_activate ();
 
   
-  printf("this is the file name %s \n", file_name);// debuggingggggggg delete later
+  //printf("this is the file name %s \n", file_name);// debuggingggggggg delete later
 	
   /* Open executable file. */
   file = filesys_open (file_name);
@@ -561,12 +587,12 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
   for (token = (char *) file_name; token != NULL;
 		         token = strtok_r (NULL, " ", save_ptr))
   {
-	  printf("this is current token: %s \n", token);
+//	  printf("this is current token: %s \n", token);
 	   *esp -= strlen(token) + 1;
 	 argv[argc] = *esp;
-	 printf("this is what is in argv at current count %d \n", argv[argc]);
+//	 printf("this is what is in argv at current count %d \n", argv[argc]);
 	argc++;
-	printf("current value of argc is %d \n", argc);
+//	printf("current value of argc is %d \n", argc);
 	memcpy(*esp, token, strlen(token) + 1);	
   }
   //stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv

@@ -36,14 +36,14 @@ syscall_write (struct intr_frame *f){
 	int fd;
 
 	fd = *(int*) (f->esp+4);
-	printf("Value of SD %d", fd);
+	//printf("Value of SD %d", fd);
 	char *buffer = (char *)*(uint32_t *) (f->esp+8);
-	printf("value of buffer %s", buffer); 
+	//printf("value of buffer %s", buffer); 
 	unsigned size = *(unsigned* ) (f->esp+12);
-	printf("value of size %d", size); 
+	//printf("value of size %d", size); 
 
 	
-	printf("value of buffer"); 
+	//printf("value of buffer"); 
 	int i; 
 	for (int i= 0; i < size; i++)
 	{
@@ -59,12 +59,12 @@ int
 syscall_create (struct intr_frame *f) {
 
 	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
-	printf("Value of filename %s", filename); 
+	//printf("Value of filename %s", filename); 
 	
 
 	unsigned initial_size =10;  
 		//*(unsigned*) (f-> esp + 8); 
-	printf("Value of size %d", initial_size); 
+	//printf("Value of size %d", initial_size); 
 
 	int success = 	filesys_create( filename, initial_size); 
 	return success;
@@ -77,7 +77,7 @@ bool
 syscall_remove (struct intr_frame *f) 
 {
 	const char * filename = (char *)*(uint32_t * )(f-> esp +4); 
-	printf("Value of filename %s", filename); 
+	//printf("Value of filename %s", filename); 
 
 	//instructions say filesys_remove includes UNIX-like semantics
 	//(removing open files for ex)
@@ -178,12 +178,12 @@ syscall_exit(struct intr_frame *f)
 	}
 	
 	int status = *(int*) (f->esp+4);
-	//printf ("%s: exit(%d)\n", pname, pid);
-	process_exit(); 
+	printf ("%s: exit(%d)\n", pname, status);
+	thread_exit(); 
 	
 	
 	//i don't know the logic to find out if the process exited ok 
-	status = 0; 
+	//status = 0; 
 }
 
 
@@ -230,6 +230,9 @@ syscall_wait( struct intr_frame *f)
 	pid_t pid = *(int*) (f->esp+4);
 	//before I block the thread, tell waiting_on_thread
 	
+
+	bool is_alive = thread_alive(pid);
+	
 	//is pid alive?
 	
 	struct thread *current = thread_current(); 
@@ -258,7 +261,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
   int syscall_number; 
   syscall_number =*(int *) f->esp;
-  printf("this is the system call number right now %d \n", syscall_number);
+  //printf("this is the system call number right now %d \n", syscall_number);
   switch(syscall_number)
   {
 	  case SYS_WRITE :
@@ -293,3 +296,79 @@ syscall_handler (struct intr_frame *f UNUSED)
   }
   thread_exit ();
 }
+
+
+
+
+// adding helper funtions for child processes--- this code is from ryan tim wilson
+//
+//
+ 
+
+struct child_process* add_child_process(int pid)
+{
+	struct child_process* cp = malloc(sizeof(struct child_process));
+	cp->pid = pid;	
+	cp->load = 0;
+	cp->wait = false;
+	cp->exit = false;
+	lock_init(&cp->wait_lock);
+	list_push_back(&thread_current()->child_list, &cp->elem);
+	return cp;
+}
+
+struct child_process *get_child_process( int pid)
+{
+	struct thread *t = thread_current();
+	struct list_elem *e;
+
+	for (e = list_begin(&t->child_list); e!=list_end(&t->child_list); e = list_next(e))
+	{
+		struct child_process *cp = list_entry(e, struct child_process, elem);
+		if (pid == cp->pid)
+		{
+			return cp;
+		}
+	}
+	return NULL;
+
+}
+
+void remove_child_process(struct child_process *cp)
+{
+	list_remove(&cp->elem);
+	free(cp);
+
+}
+
+
+void remove_child_processes(void)
+{
+	struct thread *t = thread_current();
+	struct list_elem *next, *e = list_begin(&t->child_list);
+	while (e != list_end(&t->child_list))
+			{
+
+			next = list_next(e);
+			struct child_process *cp = list_entry(e, struct child_process, elem);
+			list_remove(&cp->elem);
+			free(cp);
+			e = next;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
