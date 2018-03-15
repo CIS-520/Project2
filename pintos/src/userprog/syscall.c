@@ -149,9 +149,20 @@ syscall_open(struct intr_frame *f)
 void
 syscall_exit(struct intr_frame *f)
 {
+
+	int status = *(int*) (f->esp+4);
+	struct thread *current = thread_current();
+	if(thread_alive(current->parent))
+	{ 
+		current->cp->status = status;
+	}
+	printf("%s: exit(%d)\n", current->name, status);
+	thread_exit();
+
+
 	//0 indicates success 
 	//non zero indicates failures
-	
+/*	
 	//print the process name and exit code
 	struct thread *current = thread_current(); 
 	tid_t pid; 
@@ -183,7 +194,7 @@ syscall_exit(struct intr_frame *f)
 	
 	
 	//i don't know the logic to find out if the process exited ok 
-	//status = 0; 
+	//status = 0;*/ 
 }
 
 
@@ -226,7 +237,10 @@ syscall_read( struct intr_frame *f)
 int
 syscall_wait( struct intr_frame *f)
 {
-
+	
+	pid_t pid = *(int*) (f->esp+4);
+	return process_wait(pid);
+/*
 	pid_t pid = *(int*) (f->esp+4);
 	//before I block the thread, tell waiting_on_thread
 	
@@ -247,7 +261,7 @@ syscall_wait( struct intr_frame *f)
 	thread_block(); 
 	
 	//return status that pid returns; 
-	return 0; 
+	return 0; */ 
 
 }
 
@@ -289,7 +303,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 		 syscall_read(f); 
 		 break;
 	  case SYS_WAIT:
-		 syscall_wait(f); 
+		f-> eax = syscall_wait(f); 
 		 break;
 	  default:
 		  printf("system call! %d\n", syscall_number);

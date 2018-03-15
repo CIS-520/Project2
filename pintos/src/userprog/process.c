@@ -587,12 +587,12 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
   for (token = (char *) file_name; token != NULL;
 		         token = strtok_r (NULL, " ", save_ptr))
   {
-//	  printf("this is current token: %s \n", token);
+	  printf("this is current token: %s \n", token);
 	   *esp -= strlen(token) + 1;
 	 argv[argc] = *esp;
-//	 printf("this is what is in argv at current count %d \n", argv[argc]);
+	 printf("this is what is in argv at current count %d \n", argv[argc]);
 	argc++;
-//	printf("current value of argc is %d \n", argc);
+	printf("current value of argc is %d \n", argc);
 	memcpy(*esp, token, strlen(token) + 1);	
   }
   //stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
@@ -614,6 +614,7 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
  for (i = argc; i >= 0; i--)
  {
    *esp -= sizeof(char *);
+   printf("this is the current argument %s number: %d \n", argv[i], i);
    memcpy(*esp, &argv[i], sizeof(char *));
 }
 
@@ -630,9 +631,11 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
  // Push fake return addr
   *esp -= sizeof(void *);
     memcpy(*esp, &argv[argc], sizeof(void *));
+    printf("this is the final argc value %d \n", argc);
   // Free argv
   free(argv);
-  
+
+    printf("this is the final argv value at 0 %d \n", &argv[0]);
 
 //  ASSERT(*esp == (PHYS_BASE-12));
   return success;
