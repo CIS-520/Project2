@@ -275,7 +275,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
   int syscall_number; 
   syscall_number =*(int *) f->esp;
-  //printf("this is the system call number right now %d \n", syscall_number);
+  //print("this is the system call number right now %d \n", syscall_number);
   switch(syscall_number)
   {
 	  case SYS_WRITE :
@@ -308,7 +308,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 	  default:
 		  printf("system call! %d\n", syscall_number);
   }
-  thread_exit ();
+  //thread_exit ();
 }
 
 

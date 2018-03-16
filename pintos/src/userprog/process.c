@@ -86,6 +86,7 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
+//  printf("file name is: %s\n", program_name);
   success = load (program_name, &if_.eip, &if_.esp, &next_token_ptr); // LETS GIVE IT ONLY THE PROPER FILE NAME, THEN RUN A TEST IF IT STILL WORKS 
   //allocaet new page. make sure accessible from userprog. copy arguments to page. 
 
@@ -116,8 +117,9 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-	timer_sleep(1000);
-//for (;;);
+//	timer_sleep(1000)
+//
+for(;;);
   //return -1;
   /*
   struct thread * cur_thread = thread_current();
@@ -577,53 +579,75 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
       else
         palloc_free_page (kpage);
     }
+  
   char *token;
-  char **argv = malloc(DEFAULT_ARGV*sizeof(char *));
+  char **argv;
   int i, argc = 0, argv_size = DEFAULT_ARGV;
 
+  uint8_t * newpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  if (kpage != NULL) 
+    {
+      success = install_page (((uint8_t *) 0x0804800) - PGSIZE, kpage, true);
+      if (!success)
+        palloc_free_page (kpage);
+    }
   
-  stack_ptr = esp;
-
+//  stack_ptr = esp;
 
   for (token = (char *) file_name; token != NULL;
 		         token = strtok_r (NULL, " ", save_ptr))
   {
-//	  printf("this is current token: %s \n", token);
-	   *esp -= strlen(token) + 1;
+//	  //printf("this is current token: %s \n", token);
+	 *esp -= strlen(token) + 1;
+	// printf("esp is <%x>!\n", (int)*esp);
 	 argv[argc] = *esp;
-//	 printf("this is what is in argv at current count %d \n", argv[argc]);
+	// printf("this is what is in argv at current count %s \n", argv[argc]);
+	//argc++;
+	//printf("current value of argc is %d \n", argc);
+	memcpy(*esp, token, strlen(token) + 1);
+//	printf("argv[%d] is <%s>!\n", argc, argv[argc]);
 	argc++;
-//	printf("current value of argc is %d \n", argc);
-	memcpy(*esp, token, strlen(token) + 1);	
   }
+
   //stack_ptr = push_arg(stack_ptr, 0x00ff0000); //pointer to argv
   //stack_ptr = push_arg(stack_ptr, 0x5a5a5a5a); //pointer to argc
   //stack_ptr = push_arg(stack_ptr, 0x00223344); //name of the program
  // *esp = stack_ptr; // not sure if I still need this probably
- argv[argc] = 0;
+ //argv[argc] = 0xDEADBEEF;
+  
+ *(uint32_t *)(*esp-4) = (uint32_t)argv;
+ *(uint32_t *)(*esp-8) = argc;
+ *(uint32_t *)(*esp-12) = 0xDEADBEEF;
+ *esp = *esp - 12;
+//int j;
+printf("Address of argv from kernel space is <%x>!\n", (int)argv);
 
+printf("Address of argv[0] from kernel space is <%x>!\n", (int)&argv[0]);
+
+printf("Address of argv[1] from kernel space is <%x>!\n", (int)&argv[1]);
+for (int i = 0; i <argc; i++){
+	printf("%s ", argv[i]);
+}
+printf("\n");
+//ASSERT(false);
 // this code is not mine,,,,
 
 // Align to word size (4 bytes)
-   i = (size_t) *esp % WORD_SIZE;
+ /*  i = (size_t) *esp % WORD_SIZE;
    if (i)
   {
     *esp -= i;
     memcpy(*esp, &argv[argc], i);
-   }
+   }*/
 // Push argv[i] for all i
- for (i = argc; i >= 0; i--)
- {
-   *esp -= sizeof(char *);
- //  printf("this is the current argument %s number: %d \n", argv[i], i);
-   memcpy(*esp, &argv[i], sizeof(char *));
-}
-
-
-
-
+//for (i = argc; i >= 0; i--)
+ //{
+  // *esp -= sizeof(char *);
+ //printf("this is the current argument %s number: %d \n", argv[i], i);
+  // memcpy(*esp, &argv[i], sizeof(char *));
+//}
   // Push argv
-  token = *esp;
+ /* token = *esp;
   *esp -= sizeof(char **);
   memcpy(*esp, &token, sizeof(char **));
   // Push argc
@@ -632,12 +656,12 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
  // Push fake return addr
   *esp -= sizeof(void *);
     memcpy(*esp, &argv[argc], sizeof(void *));
-  //  printf("this is the final argc value %d \n", argc);
+   // printf("this is the final argc value %d \n", argc);
   // Free argv
   free(argv);
 
    // printf("this is the final argv value at 0 %d \n", &argv[0]);
-
+*/
 //  ASSERT(*esp == (PHYS_BASE-12));
   return success;
 }

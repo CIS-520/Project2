@@ -4,35 +4,17 @@
 int
 main (int argc, char **argv)
 {
-	//	FILE *fp;
-        //fp = fopen("file.txt" , "w+");
+	printf("the argument count is %d \n",  argc);
 
-	// we are going to test the arguments, see if they are put on the stack properly
-	//
-	/* int i=0;
-	 printf("\ncmdline args count=%s", argc);
+printf("Address of argv from user space is <%x>!\n", (int)argv);
 
-	//   First argument is executable name only 
-	  printf("\nexe name=%s", argv[0]);
+printf("Address of argv[0] from user space is <%x>!\n", (int)&argv[0]);
 
-	   for (i=1; i< argc; i++) {
-		        printf("\narg%d=%s", i, argv[i]);
-			 }
-
-	    printf("\n");
-	     return 0; */
-printf("hello world");
-
-// lets try an fopen?
-//
-//__asm__ __volatile__("int $0x30");
-/*  int i;
-
+printf("Address of argv[1] from user space is <%x>!\n", (int)&argv[1]);
+int i;
   for (i = 0; i < argc; i++)
-    printf ("%s ", argv[i]);
-  printf ("\n");
-  */
-  //return EXIT_SUCCESS;
-//	printf(argv);
-////	for(;;);
+	      printf ("%s ", argv[i]);
+    printf ("\n");
+for(;;);
+      return EXIT_SUCCESS;
 }
