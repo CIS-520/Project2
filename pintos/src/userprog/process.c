@@ -21,6 +21,9 @@
 #include "threads/synch.h"
 #include "userprog/syscall.h"
 static thread_func start_process NO_RETURN;
+
+char global_filename [14];
+
 static bool load (const char *cmdline, void (**eip) (void), void **esp, char** save_ptr);
 
 
@@ -81,6 +84,7 @@ start_process (void *file_name_)
   char   program_name[14];
   strlcpy(program_name,token,sizeof(program_name));
 
+  strlcpy(global_filename,program_name,sizeof(global_filename));
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
@@ -117,9 +121,8 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-//	timer_sleep(1000)
-//
-for(;;);
+  timer_sleep(1000);
+  printf("%s: exit(%d)\n",&global_filename,  0);
   //return -1;
   /*
   struct thread * cur_thread = thread_current();
@@ -156,7 +159,7 @@ for(;;);
 	remove_child_process(cp);
 	return status;
 */
-
+	return 0;
 }
 
 /* Free the current process's resources. */
@@ -583,17 +586,36 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
   char *token;
   char **argv;
   int i, argc = 0, argv_size = DEFAULT_ARGV;
-
+ 
   uint8_t * newpage = palloc_get_page (PAL_USER | PAL_ZERO);
-  if (kpage != NULL) 
+  uint8_t * newpage_ptr = (uint8_t *) 0x08048000 - PGSIZE;
+  if (newpage != NULL) 
     {
-      success = install_page (((uint8_t *) 0x0804800) - PGSIZE, kpage, true);
+      success = install_page (newpage_ptr, newpage, true);
       if (!success)
-        palloc_free_page (kpage);
+        palloc_free_page (newpage);
     }
-  
+
+ 
+ strlcpy(newpage_ptr, file_name, strlen(file_name)+1);
+ strlcpy(newpage_ptr+strlen(file_name), "       ", 5);
+ strlcpy(newpage_ptr+strlen(file_name)+1, *save_ptr,  strlen(*save_ptr)+1);
 //  stack_ptr = esp;
 
+*esp = *esp - 128;
+argv = (char **)*esp;
+
+char * next_token;
+
+argv[0] = strtok_r(newpage_ptr, " ", &next_token);
+
+while(++argc) {
+	if( (argv[argc] = strtok_r(NULL, " ", &next_token) ) == NULL)
+		break;
+
+}
+
+/*
   for (token = (char *) file_name; token != NULL;
 		         token = strtok_r (NULL, " ", save_ptr))
   {
@@ -614,22 +636,13 @@ setup_stack (void **esp, const char * file_name, char **save_ptr)
   //stack_ptr = push_arg(stack_ptr, 0x00223344); //name of the program
  // *esp = stack_ptr; // not sure if I still need this probably
  //argv[argc] = 0xDEADBEEF;
-  
+ */ 
  *(uint32_t *)(*esp-4) = (uint32_t)argv;
  *(uint32_t *)(*esp-8) = argc;
  *(uint32_t *)(*esp-12) = 0xDEADBEEF;
  *esp = *esp - 12;
 //int j;
-printf("Address of argv from kernel space is <%x>!\n", (int)argv);
 
-printf("Address of argv[0] from kernel space is <%x>!\n", (int)&argv[0]);
-
-printf("Address of argv[1] from kernel space is <%x>!\n", (int)&argv[1]);
-for (int i = 0; i <argc; i++){
-	printf("%s ", argv[i]);
-}
-printf("\n");
-//ASSERT(false);
 // this code is not mine,,,,
 
 // Align to word size (4 bytes)

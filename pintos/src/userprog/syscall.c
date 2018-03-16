@@ -150,13 +150,13 @@ void
 syscall_exit(struct intr_frame *f)
 {
 
-	int status = *(int*) (f->esp+4);
-	struct thread *current = thread_current();
-	if(thread_alive(current->parent))
-	{ 
-		current->cp->status = status;
-	}
-	printf("%s: exit(%d)\n", current->name, status);
+	//int status = *(int*) (f->esp+4);
+	//struct thread *current = thread_current();
+	//if(thread_alive(current->parent))
+	//{ 
+	//	current->cp->status = status;
+	//}
+	//printf("%s: exit(%d)\n", current->name, status);
 	thread_exit();
 
 
